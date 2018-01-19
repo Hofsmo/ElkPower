@@ -9,6 +9,7 @@ class PydyGrid:
         """Constructor."""
         self.description = []
         self.static_data = []
+        self.static_components = []
 
     def read_configuration(self, fname):
         """Read configuration file.
