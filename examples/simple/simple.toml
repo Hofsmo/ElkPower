@@ -1,0 +1,12 @@
+# Test
+
+title = "simple"
+
+[description]
+	name = "simple"
+
+[static_data]
+		buses = "buses.csv"
+		lines = "lines.csv"
+		loads = "loads.csv"
+		generators = "generators.csv"
