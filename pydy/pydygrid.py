@@ -1,6 +1,7 @@
 """Module for reading and writing data."""
 import pytoml as toml
 
+
 class PydyGrid:
     """Class for reading and writing grids."""
 

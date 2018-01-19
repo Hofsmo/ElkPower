@@ -5,4 +5,4 @@ python:
 install: 
 pip install .
 pip install pytest -r requirements.txt
-script: pytest
+script: pytest --pep8
