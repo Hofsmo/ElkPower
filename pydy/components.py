@@ -14,8 +14,9 @@ class Component:
 class Node(Component):
     """Class for storing nodes."""
 
-    def __init__(self, name, base_v, base_p, voltage, angle,
-                 v_min, v_max):
+    def __init__(self, name, base_v=None, base_p=None,
+                 voltage=1.0, angle=0.0,
+                 v_min=0.9, v_max=1.1):
         """ Node constructor.
         Args:
             name: Name of the node
@@ -44,8 +45,10 @@ class Node(Component):
 class Generator(Node):
     """Class for generators."""
 
-    def __init__(self, name, base_v, base_p, voltage, angle,
-                 active_power, reactive_power, v_min, v_max, rating):
+    def __init__(self, name, base_v=None, base_p=None,
+                 voltage=1.0, angle=0.0,
+                 active_power=0.0, reactive_power=0.0,
+                 v_min=0.9, v_max=1.1, rating=None):
         """
         Generator constructor.
         Args:
@@ -65,3 +68,60 @@ class Generator(Node):
         self.active_power = active_power
         self.reactive_power = reactive_power
         self.rating = rating
+
+class Load(Node):
+    """Class for loads."""
+
+    def __init__(self, name, base_v=None, base_p=None,
+                 voltage=1.0, angle=0.0,
+                 active_power=0.0, reactive_power=0.0,
+                 v_min=0.9, v_max=1.1):
+        """Load constructor.
+        Args:
+            name: Name of the load
+            base_v: base voltage
+            base_p: base power
+            voltage: voltage
+            angle: voltage angle
+            active_power: Active power at the load
+            reactive_power: Reactive power at the load
+            v_min: minimum voltage at the load
+            v_max: maximum voltage
+            """
+        super().__init__(name, base_v, base_p, voltage, angle,
+                         voltage, angle, v_min, v_max)
+        self.active_power = active_power
+        self.reactive_power = reactive_power
+
+class Edge:
+    """Class for edges."""
+
+    def __init__(self, name, f_bus, t_bus, rating=None):
+        """Edge constructor
+        Args:
+            name: Name of the edge
+            f_bus: The bus it is coming from
+            t_bus: The bus it is going to.
+            rating: The rating of the edge
+            """
+        self.name = name
+        self.f_bus = f_bus
+        self.t_bus = t_bus
+
+class Line:
+    """Class for lines."""
+
+    def __init__(self, name, f_bus, t_bus, rating=None, x=0.0, r=0.0):
+        """ Line constructor
+        Args:
+            name: Name of the line
+            f_bus: The bus the line is coming from
+            t_bus: The bus the line is going to
+            rating: The rating of the line
+            x: The reactance of the line
+            r: The resistnace of the line
+            """
+        super().__init__(name, f_bus, t_bus)
+        self.x = x
+        self.r = r
+
