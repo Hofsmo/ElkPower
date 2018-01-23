@@ -1,2 +1,2 @@
-name, active_power
-5, 100
+name,bus,active_power
+Load,5, 100

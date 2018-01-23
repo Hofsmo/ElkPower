@@ -62,7 +62,7 @@ class Grid:
                         comp_args = self.create_args(parameters, row)
                         obj = class_(**comp_args)
                         if isinstance(obj, elkgraf.components.Node):
-                            self.graph.add_node(obj.name, data=obj)
+                            self.graph.add_node(obj.bus, data=obj)
                         else:
                             self.graph.add_edge(obj.t_bus, obj.f_bus, data=obj)
 
@@ -87,4 +87,4 @@ class Grid:
 
     def draw(self):
         """Function for drawing the grid."""
-        nx.draw(self.graph)
+        nx.draw_networkx(self.graph, with_labels=True)

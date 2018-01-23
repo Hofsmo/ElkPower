@@ -4,7 +4,7 @@
 class Component:
     """Class for components."""
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         """Constructor for Component.
         Args:
             name: name of the component
@@ -15,18 +15,19 @@ class Component:
 class Node(Component):
     """Class for storing nodes."""
 
-    def __init__(self, name, base_v=None, base_p=None,
+    def __init__(self, bus, name=None, base_v=None, base_p=None,
                  voltage=1.0, angle=0.0,
                  v_min=0.9, v_max=1.1):
         """ Node constructor.
         Args:
+            bus: Unique identifier of the node
             name: Name of the node
             base_v: base voltage for the node
             base_p: base power for the node
             voltage: voltage at the node
             angle: voltage angle at the node
             v_min: minimum voltage at the node
-            v_max: maximum volta at the node
+            v_max: maximum voltage at the node
             """
         super().__init__(name)
         self.base_v = base_v
@@ -41,12 +42,13 @@ class Node(Component):
         self.angle = angle
         self.v_min = v_min
         self.v_max = v_max
+        self.bus = bus
 
 
 class Generator(Node):
     """Class for generators."""
 
-    def __init__(self, name, base_v=None, base_p=None,
+    def __init__(self, bus, name=None, base_v=None, base_p=None,
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
                  v_min=0.9, v_max=1.1, rating=None):
@@ -64,7 +66,7 @@ class Generator(Node):
             v_max: maximum voltage
             rating: the rating of the machine
             """
-        super().__init__(name, base_v, base_p, voltage, angle,
+        super().__init__(bus, name, base_v, base_p, voltage, angle,
                          v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power
@@ -74,7 +76,7 @@ class Generator(Node):
 class Load(Node):
     """Class for loads."""
 
-    def __init__(self, name, base_v=None, base_p=None,
+    def __init__(self, bus, name=None, base_v=None, base_p=None,
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
                  v_min=0.9, v_max=1.1):
@@ -90,7 +92,7 @@ class Load(Node):
             v_min: minimum voltage at the load
             v_max: maximum voltage
             """
-        super().__init__(name, base_v, base_p, voltage, angle,
+        super().__init__(bus, name, base_v, base_p, voltage, angle,
                          v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power

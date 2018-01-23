@@ -1,6 +1,7 @@
 """Test module for grid reading."""
 import os
 import pytest
+import networkx as nx
 from elkgraf.grid import Grid
 
 
@@ -20,11 +21,8 @@ def test_toml(grid):
     assert grid.description["name"] == "simple"
 
 
-# def test_read_connected(grid):
-    # """Reading of simple grid."""
+def test_read_connected(grid):
+    """Reading of simple grid."""
 
-    # grid.read_grid()
-    # nx.draw(grid.graph)
-    # plt.plot()
-    # plt.show()
-    # assert nx.is_connected(grid.graph)
+    grid.read_grid()
+    assert nx.is_connected(grid.graph)
