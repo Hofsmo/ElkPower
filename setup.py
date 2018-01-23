@@ -1,6 +1,6 @@
-"""Setup script for PyDy."""
+"""Setup script for elkgraf."""
 from setuptools import setup, find_packages
-setup(name='pydy',
+setup(name='elkgraf',
       version='0.1',
-      description="Power system dynamic simulation.",
+      description="Power systems as a graphs.",
       packages=find_packages())

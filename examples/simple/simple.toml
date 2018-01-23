@@ -5,7 +5,7 @@ title = "simple"
 [description]
 	name = "simple"
 
-[static_data]
+[components]
 		buses = "buses.csv"
 		lines = "lines.csv"
 		loads = "loads.csv"

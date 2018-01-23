@@ -9,6 +9,7 @@ class Component:
         Args:
             name: name of the component
             """
+        self.name = name
 
 
 class Node(Component):
@@ -64,10 +65,11 @@ class Generator(Node):
             rating: the rating of the machine
             """
         super().__init__(name, base_v, base_p, voltage, angle,
-                         voltage, angle, v_min, v_max)
+                         v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power
         self.rating = rating
+
 
 class Load(Node):
     """Class for loads."""
@@ -89,9 +91,10 @@ class Load(Node):
             v_max: maximum voltage
             """
         super().__init__(name, base_v, base_p, voltage, angle,
-                         voltage, angle, v_min, v_max)
+                         v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power
+
 
 class Edge:
     """Class for edges."""
@@ -108,7 +111,8 @@ class Edge:
         self.f_bus = f_bus
         self.t_bus = t_bus
 
-class Line:
+
+class Line(Edge):
     """Class for lines."""
 
     def __init__(self, name, f_bus, t_bus, rating=None, x=0.0, r=0.0):
@@ -124,4 +128,3 @@ class Line:
         super().__init__(name, f_bus, t_bus)
         self.x = x
         self.r = r
-

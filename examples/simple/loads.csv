@@ -1,4 +1,2 @@
-name|bus
-3,3
-4,4
-5,5
+name, active_power
+5, 100
