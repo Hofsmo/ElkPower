@@ -1,12 +1,16 @@
-# Test
+# Configuration file for a simple test system
 
 title = "simple"
 
 [description]
 	name = "simple"
 
+[system]
+	base_mva = 3300
+	V_base = 400
+	ref_bus = 2
+
 [components]
-		buses = "buses.csv"
 		lines = "lines.csv"
 		loads = "loads.csv"
 		generators = "generators.csv"

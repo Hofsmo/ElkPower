@@ -2,7 +2,7 @@
 import os
 import pytest
 import networkx as nx
-from elkgraf.grid import Grid
+from elkpower.grid import Grid
 
 
 @pytest.fixture(scope="session")
@@ -26,3 +26,6 @@ def test_read_connected(grid):
 
     grid.read_grid()
     assert nx.is_connected(grid.graph)
+
+# def test_susceptance_matrix(grid):
+    # """Test that the suceptance matrix is correct."""

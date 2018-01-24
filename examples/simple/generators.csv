@@ -1,3 +1,3 @@
-name,bus,p_nom,carrier
-Hydro,1,300,hydro
-System,2,3300,hydro
+name,bus,base_p,x,n_gen,base_v
+Hydro,1,300,0.2,1,20
+System,2,300,0.2,10,20
