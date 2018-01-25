@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from elkgraf.grid import Grid
+from elkpower.grid import Grid
 
 grid = Grid()
 

@@ -73,13 +73,15 @@ class Grid:
                                and obj.x:
                                 g_node = "G"+str(obj.bus)
                                 self.graph.add_node(g_node, data=obj)
-                                z_base = obj.base_v**2/obj.base_p
+                                z_base = obj.base_v**2/obj.base_p/obj.n_gen
                                 line = elkpower.components.Line(f_bus=g_node,
                                                                 t_bus=obj.bus,
                                                                 x=obj.x,
                                                                 z_base=z_base)
                                 self.graph.add_edge(g_node, obj.bus, data=line)
                         else:
+                            if not obj.z_base:
+                                obj.z_base = self.system["z_base"]
                             self.graph.add_edge(obj.t_bus, obj.f_bus, data=obj)
 
     def create_args(self, parameters, comp):
@@ -119,7 +121,7 @@ class Grid:
         for node, nbrs in self.graph.adj.items():
             for nbr in nbrs.keys():
                 edge = self.graph[node][nbr]['data']
-                suceptance = 1/(edge.x*edge.z_base/grid.system["s_base"])
+                susceptance = 1/(edge.x*edge.z_base/self.system["z_base"])
                 b_matrix[idx][idx] += susceptance
                 b_matrix[idx][nodes.index(nbr)] -= susceptance
             idx += 1
