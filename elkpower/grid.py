@@ -4,8 +4,9 @@ import networkx as nx
 import csv
 import inspect
 import os
+import numpy as np
 
-import elkgraf.components
+import elkpower.components
 
 
 # List of components to read. The order is important
@@ -36,14 +37,19 @@ class Grid:
 
         self.description = conf["description"]
         self.components = conf["components"]
+        self.system = conf["system"]
+        self.system["z_base"] =\
+            self.system["V_base"]**2/self.system["base_mva"]
 
     def read_grid(self):
         """Read in the grid as a graph"""
-
         # Iterate through the components
         for component, class_name in COMPONENTS.items():
+            # If the component type is not the file
+            if component not in self.components.keys():
+                continue
             try:
-                class_ = getattr(elkgraf.components, class_name)
+                class_ = getattr(elkpower.components, class_name)
             except:
                 print("This should not have happened.")
                 raise
@@ -61,9 +67,21 @@ class Grid:
                     for row in reader:
                         comp_args = self.create_args(parameters, row)
                         obj = class_(**comp_args)
-                        if isinstance(obj, elkgraf.components.Node):
+                        if isinstance(obj, elkpower.components.Node):
                             self.graph.add_node(obj.bus, data=obj)
+                            if isinstance(obj, elkpower.components.Generator)\
+                               and obj.x:
+                                g_node = "G"+str(obj.bus)
+                                self.graph.add_node(g_node, data=obj)
+                                z_base = obj.base_v**2/obj.base_p/obj.n_gen
+                                line = elkpower.components.Line(f_bus=g_node,
+                                                                t_bus=obj.bus,
+                                                                x=obj.x,
+                                                                z_base=z_base)
+                                self.graph.add_edge(g_node, obj.bus, data=line)
                         else:
+                            if not obj.z_base:
+                                obj.z_base = self.system["z_base"]
                             self.graph.add_edge(obj.t_bus, obj.f_bus, data=obj)
 
     def create_args(self, parameters, comp):
@@ -77,6 +95,8 @@ class Grid:
         comp_args = dict()
         for key, value in parameters.items():
             try:
+                comp_args[key] = float(comp[key])
+            except ValueError:
                 comp_args[key] = comp[key]
             except KeyError:
                 if value.default is not inspect._empty:
@@ -88,3 +108,22 @@ class Grid:
     def draw(self):
         """Function for drawing the grid."""
         nx.draw_networkx(self.graph, with_labels=True)
+
+    def nodal_susceptance_matrix(self):
+        """Find nodal susceptance matrix.
+        Return:
+            The nodal susceptance matrix.
+            """
+        n_nodes = self.graph.number_of_nodes()
+        b_matrix = np.zeros([n_nodes, n_nodes])
+        idx = 0
+        nodes = list(self.graph.nodes())
+        for node, nbrs in self.graph.adj.items():
+            for nbr in nbrs.keys():
+                edge = self.graph[node][nbr]['data']
+                susceptance = 1/(edge.x*edge.z_base/self.system["z_base"])
+                b_matrix[idx][idx] += susceptance
+                b_matrix[idx][nodes.index(nbr)] -= susceptance
+            idx += 1
+
+        return b_matrix

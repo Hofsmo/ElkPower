@@ -1,3 +1,4 @@
 pytoml
 networkx
 matplotlib
+numpy

@@ -103,3 +103,6 @@ ENV/
 # vim
 *.swo
 *.swp
+
+# some Gnome stuff I guess
+*.un~

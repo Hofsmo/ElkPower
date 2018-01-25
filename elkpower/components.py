@@ -51,7 +51,8 @@ class Generator(Node):
     def __init__(self, bus, name=None, base_v=None, base_p=None,
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
-                 v_min=0.9, v_max=1.1, rating=None):
+                 v_min=0.9, v_max=1.1, rating=None, x=None,
+                 n_gen=1):
         """
         Generator constructor.
         Args:
@@ -65,12 +66,16 @@ class Generator(Node):
             v_min: minimum voltage
             v_max: maximum voltage
             rating: the rating of the machine
+            x: Internal reactance
+            n_gen: Number of generators for aggregated generators
             """
         super().__init__(bus, name, base_v, base_p, voltage, angle,
                          v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power
         self.rating = rating
+        self.x = x
+        self.n_gen = n_gen
 
 
 class Load(Node):
@@ -101,7 +106,7 @@ class Load(Node):
 class Edge:
     """Class for edges."""
 
-    def __init__(self, name, f_bus, t_bus, rating=None):
+    def __init__(self, f_bus, t_bus, name=None, rating=None):
         """Edge constructor
         Args:
             name: Name of the edge
@@ -109,15 +114,16 @@ class Edge:
             t_bus: The bus it is going to.
             rating: The rating of the edge
             """
-        self.name = name
         self.f_bus = f_bus
         self.t_bus = t_bus
+        self.name = name
 
 
 class Line(Edge):
     """Class for lines."""
 
-    def __init__(self, name, f_bus, t_bus, rating=None, x=0.0, r=0.0):
+    def __init__(self, f_bus, t_bus, name=None, rating=None, x=0.0, r=0.0,
+                 z_base=None):
         """ Line constructor
         Args:
             name: Name of the line
@@ -125,8 +131,10 @@ class Line(Edge):
             t_bus: The bus the line is going to
             rating: The rating of the line
             x: The reactance of the line
-            r: The resistnace of the line
+            r: The resistance of the line
+            z_base: The base impedance of the line
             """
-        super().__init__(name, f_bus, t_bus)
+        super().__init__(f_bus=f_bus, t_bus=t_bus, name=name)
         self.x = x
         self.r = r
+        self.z_base = z_base

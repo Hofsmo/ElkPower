@@ -6,6 +6,5 @@ grid = Grid()
 fname = "simple.toml"
 grid.read_configuration(fname)
 grid.read_grid()
-grid.draw()
-plt.plot()
-plt.show()
+
+B = grid.nodal_susceptance_matrix()
