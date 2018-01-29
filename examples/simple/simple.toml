@@ -8,7 +8,8 @@ title = "simple"
 [system]
 	base_mva = 3300
 	V_base = 400
-	ref_bus = 2
+	f_base = 50
+	ref_bus = 1
 
 [components]
 		lines = "lines.csv"

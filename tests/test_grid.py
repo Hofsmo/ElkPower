@@ -39,14 +39,34 @@ def test_susceptance_matrix(grid):
         [0, -2424.2, 0, 2424.4, -0.2],
         [0, 0, -0.2, -0.2, 0.4]])
 
-    grid.read_grid()
     test = grid.nodal_susceptance_matrix()
 
-    # Sort the matrices
-    test.sort(axis=0)
-    test.sort(axis=1)
+    custom_matrix_assert(correct, test)
 
-    correct.sort(axis=0)
-    correct.sort(axis=1)
 
-    np.testing.assert_allclose(test, correct, 1e-3)
+def test_number_of_generators(grid):
+    """Find number of generators."""
+
+    assert 2 == grid.number_of_generators()
+
+
+def custom_matrix_assert(mat1, mat2):
+    """Compare matrices."""
+    sort_two_axes(mat1)
+    sort_two_axes(mat2)
+
+    np.testing.assert_allclose(mat1, mat2, 1e-3)
+
+
+def sort_two_axes(matrix):
+    """Sort along two axes."""
+    matrix.sort(axis=0)
+    matrix.sort(axis=1)
+# def test_k_matrix(grid):
+# """test that the k_matrix is correct."""
+# correct = np.array([
+    # [0.1, -0.1, -0.9996, 0, 0.4998],
+    # [-0.1, 0.1, -0.0004, -1, -0.5002]])
+
+# custom_matrix_assert(correct,
+# grid.dc_coupling_constants())

@@ -24,6 +24,8 @@ class Grid:
         self.components = []
         self.conf_dir = []
         self.graph = nx.Graph()
+        self.gen_list = []
+        self.load_list = []
 
     def read_configuration(self, fname):
         """Read configuration file.
@@ -59,26 +61,36 @@ class Grid:
             if isinstance(self.components[component], str):
                 comp_list = [self.components[component]]
             else:
-                compl_list = self.components[component]
+                comp_list = self.components[component]
             for comp in comp_list:
                 fname = os.path.join(self.conf_dir, comp)
                 with open(fname) as csvfile:
-                    reader = csv.DictReader(csvfile)
+                    dialect = csv.Sniffer().sniff(csvfile.read(1024))
+                    csvfile.seek(0)
+                    reader = csv.DictReader(csvfile, dialect=dialect)
                     for row in reader:
                         comp_args = self.create_args(parameters, row)
                         obj = class_(**comp_args)
                         if isinstance(obj, elkpower.components.Node):
                             self.graph.add_node(obj.bus, data=obj)
-                            if isinstance(obj, elkpower.components.Generator)\
-                               and obj.x:
-                                g_node = "G"+str(obj.bus)
-                                self.graph.add_node(g_node, data=obj)
-                                z_base = obj.base_v**2/obj.base_p/obj.n_gen
-                                line = elkpower.components.Line(f_bus=g_node,
-                                                                t_bus=obj.bus,
-                                                                x=obj.x,
-                                                                z_base=z_base)
-                                self.graph.add_edge(g_node, obj.bus, data=line)
+                            if isinstance(obj, elkpower.components.Generator):
+                                self.gen_list.append(obj.bus)
+                                if obj.x:
+                                    g_node = "G"+str(obj.bus)
+                                    self.graph.add_node(g_node, data=obj)
+                                    z_base = obj.base_v**2/obj.base_p/obj.n_gen
+                                    line = elkpower.components.Line(
+                                        f_bus=g_node,
+                                        t_bus=obj.bus,
+                                        x=obj.x,
+                                        z_base=z_base)
+                                    self.graph.add_edge(g_node,
+                                                        obj.bus, data=line)
+                                    self.gen_list.pop()
+                                    self.gen_list.append(g_node)
+                                    self.load_list.append(obj.bus)
+                            else:
+                                self.load_list.append(obj.bus)
                         else:
                             if not obj.z_base:
                                 obj.z_base = self.system["z_base"]
@@ -109,6 +121,14 @@ class Grid:
         """Function for drawing the grid."""
         nx.draw_networkx(self.graph, with_labels=True)
 
+    def number_of_generators(self):
+        """Return number of generators."""
+        return len(self.gen_list)
+
+    def number_of_loads(self):
+        """Return number of loads."""
+        return len(self.load_list)
+
     def nodal_susceptance_matrix(self):
         """Find nodal susceptance matrix.
         Return:
@@ -117,9 +137,10 @@ class Grid:
         n_nodes = self.graph.number_of_nodes()
         b_matrix = np.zeros([n_nodes, n_nodes])
         idx = 0
-        nodes = list(self.graph.nodes())
-        for node, nbrs in self.graph.adj.items():
-            for nbr in nbrs.keys():
+        nodes = self.gen_list + self.load_list
+
+        for node in nodes:
+            for nbr in nx.all_neighbors(self.graph, node):
                 edge = self.graph[node][nbr]['data']
                 susceptance = 1/(edge.x*edge.z_base/self.system["z_base"])
                 b_matrix[idx][idx] += susceptance
@@ -127,3 +148,34 @@ class Grid:
             idx += 1
 
         return b_matrix
+
+    def dc_coupling_constants(self):
+        """Constatns needed for dynamic simulation linearization."""
+        b_matrix = self.nodal_susceptance_matrix()
+        n_gen = self.number_of_generators()
+        n_nodes = self.graph.number_of_nodes()
+
+        y_11 = b_matrix[0:n_gen, 0:n_gen]
+        y_12 = b_matrix[0:n_gen, n_gen:n_nodes]
+
+        y_21 = b_matrix[n_gen:n_nodes, 0:n_gen]
+        y_22 = b_matrix[n_gen:n_nodes, n_gen:n_nodes]
+
+        y_22_inv = np.linalg.inv(y_22)
+
+        return np.concatenate((y_11-np.matmul(np.matmul(y_12, y_22_inv), y_21),
+                              np.matmul(y_12, y_22_inv)), axis=1)
+# def dc_state_matrix(self):
+# """Method for returning state space matrix."""
+# states_per_gen = 5
+# n_gen = self.number_of_generators()
+# n_states = states_per_gen*n_gen
+# a_matrix = np.zeros([n_states, n_states])
+# s_base = self.system["base_mva"]
+
+# for idx, gen in enumerate(self.gen_list):
+# # Find index of generator angle
+# theta_i = idx*states_per_gen
+# a_matrix[theta_i,theta_i+1] = 1
+# a_matrix[theta_i+1,0] = -s_base*np.pi*
+# for
