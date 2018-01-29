@@ -72,3 +72,10 @@ def test_k_matrix(grid):
 
     test = grid.dc_coupling_constants()
     custom_matrix_assert(correct, test, atol=0.1)
+
+
+def test_dc_state_matrix(grid):
+    """Test the dc_state_matrix"""
+    test = grid.dc_state_matrix()
+    correct = -0.1*np.pi*3300*50/(300*9.68)
+    np.testing.assert_allclose(correct, test[1, 0], atol=0.1)

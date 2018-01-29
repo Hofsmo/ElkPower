@@ -51,8 +51,8 @@ class Generator(Node):
     def __init__(self, bus, name=None, base_v=None, base_p=None,
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
-                 v_min=0.9, v_max=1.1, rating=None, x=None,
-                 n_gen=1):
+                 v_min=0.9, v_max=1.1, x=None,
+                 n_gen=1, inertia=None):
         """
         Generator constructor.
         Args:
@@ -65,7 +65,6 @@ class Generator(Node):
             reactive_power: reactive power production
             v_min: minimum voltage
             v_max: maximum voltage
-            rating: the rating of the machine
             x: Internal reactance
             n_gen: Number of generators for aggregated generators
             """
@@ -73,9 +72,9 @@ class Generator(Node):
                          v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power
-        self.rating = rating
         self.x = x
         self.n_gen = n_gen
+        self.inertia = inertia
 
 
 class Load(Node):

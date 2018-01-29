@@ -165,17 +165,27 @@ class Grid:
 
         return np.concatenate((y_11-np.matmul(np.matmul(y_12, y_22_inv), y_21),
                               np.matmul(y_12, y_22_inv)), axis=1)
-# def dc_state_matrix(self):
-# """Method for returning state space matrix."""
-# states_per_gen = 5
-# n_gen = self.number_of_generators()
-# n_states = states_per_gen*n_gen
-# a_matrix = np.zeros([n_states, n_states])
-# s_base = self.system["base_mva"]
 
-# for idx, gen in enumerate(self.gen_list):
-# # Find index of generator angle
-# theta_i = idx*states_per_gen
-# a_matrix[theta_i,theta_i+1] = 1
-# a_matrix[theta_i+1,0] = -s_base*np.pi*
-# for
+    def dc_state_matrix(self):
+        """Method for returning state space matrix."""
+        states_per_gen = 5
+        n_gen = self.number_of_generators()
+        n_states = states_per_gen*n_gen
+        a_matrix = np.zeros([n_states, n_states])
+        k_matrix = self.dc_coupling_constants()
+        node_data = nx.get_node_attributes(self.graph, "data")
+
+        for idx, gen in enumerate(self.gen_list):
+            # Find index of generator angle
+            theta_i = idx*states_per_gen
+            a_matrix[theta_i, theta_i+1] = 1
+            generator = node_data[gen]
+            try:
+                a_matrix[theta_i+1, 0] =\
+                        -self.system["base_mva"]*np.pi*k_matrix[idx, idx] *\
+                        self.system["f_base"] /\
+                        (generator.inertia * generator.base_p)
+            except TypeError:
+                print("Missing dynamic parameter")
+
+        return a_matrix
