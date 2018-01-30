@@ -1,2 +1,2 @@
-name,bus,active_power
-Load,3, 100
+name,bus,active_power,freq_dep
+Load,3, 100,50

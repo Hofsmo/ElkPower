@@ -13,6 +13,9 @@ import elkpower.components
 COMPONENTS = {"loads": "Load", "buses": "Node",
               "generators": "Generator", "lines": "Line"}
 
+# At the moment this is hardcoded.
+STATES_PER_GEN = 5
+
 
 class Grid:
     """Class for reading and writing grids."""
@@ -42,6 +45,7 @@ class Grid:
         self.system = conf["system"]
         self.system["z_base"] =\
             self.system["V_base"]**2/self.system["base_mva"]
+        self.system["inertia"] = 0
 
     def read_grid(self):
         """Read in the grid as a graph"""
@@ -72,9 +76,9 @@ class Grid:
                         comp_args = self.create_args(parameters, row)
                         obj = class_(**comp_args)
                         if isinstance(obj, elkpower.components.Node):
-                            self.graph.add_node(obj.bus, data=obj)
                             if isinstance(obj, elkpower.components.Generator):
                                 self.gen_list.append(obj.bus)
+                                self.system["inertia"] += obj.inertia
                                 if obj.x:
                                     g_node = "G"+str(obj.bus)
                                     self.graph.add_node(g_node, data=obj)
@@ -89,7 +93,11 @@ class Grid:
                                     self.gen_list.pop()
                                     self.gen_list.append(g_node)
                                     self.load_list.append(obj.bus)
+                                    self.graph.add_node(
+                                        obj.bus,
+                                        data=elkpower.components.Load(obj.bus))
                             else:
+                                self.graph.add_node(obj.bus, data=obj)
                                 self.load_list.append(obj.bus)
                         else:
                             if not obj.z_base:
@@ -168,24 +176,42 @@ class Grid:
 
     def dc_state_matrix(self):
         """Method for returning state space matrix."""
-        states_per_gen = 5
         n_gen = self.number_of_generators()
-        n_states = states_per_gen*n_gen
+        n_states = STATES_PER_GEN*n_gen
         a_matrix = np.zeros([n_states, n_states])
-        k_matrix = self.dc_coupling_constants()
         node_data = nx.get_node_attributes(self.graph, "data")
 
         for idx, gen in enumerate(self.gen_list):
             # Find index of generator angle
-            theta_i = idx*states_per_gen
+            theta_i = idx*STATES_PER_GEN
             a_matrix[theta_i, theta_i+1] = 1
             generator = node_data[gen]
+
+            # Calculate entries for derivative of speed
             try:
-                a_matrix[theta_i+1, 0] =\
-                        -self.system["base_mva"]*np.pi*k_matrix[idx, idx] *\
-                        self.system["f_base"] /\
-                        (generator.inertia * generator.base_p)
+                a_matrix[theta_i+1, 1] = -generator.kd/(2*generator.inertia)
             except TypeError:
                 print("Missing dynamic parameter")
-
+            self.dc_state_matrix_electrical_power(theta_i, idx,
+                                                  a_matrix)
         return a_matrix
+
+    def dc_state_matrix_electrical_power(self, theta_i, idx_i,
+                                         a_matrix):
+        """Calculate matrix entries for electrical power in swing equation."""
+        s_b = self.system["base_mva"]
+        f_b = self.system["f_base"]
+        k_matrix = self.dc_coupling_constants()
+        node_data = nx.get_node_attributes(self.graph, "data")
+        for idx_j, gen_j in enumerate(self.gen_list):
+            theta_j = idx_j*STATES_PER_GEN
+            generator_j = node_data[gen_j]
+            pu = s_b/(2*generator_j.inertia*generator_j.base_p)
+            for idx_l, load in enumerate(self.load_list):
+                load_obj = node_data[load]
+                a_matrix[theta_i + 1, theta_j] =\
+                    -pu*np.pi*k_matrix[idx_i, idx_j] * 2 * f_b
+                kl = k_matrix[idx_j, idx_l]
+                a_matrix[theta_i+1, theta_j+1] += -pu*(
+                        kl*generator_j.inertia*load_obj.freq_dep /
+                        self.system["inertia"])

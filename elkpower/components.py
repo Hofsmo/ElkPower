@@ -52,7 +52,7 @@ class Generator(Node):
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
                  v_min=0.9, v_max=1.1, x=None,
-                 n_gen=1, inertia=None):
+                 n_gen=1, inertia=0, kd=None):
         """
         Generator constructor.
         Args:
@@ -74,7 +74,8 @@ class Generator(Node):
         self.reactive_power = reactive_power
         self.x = x
         self.n_gen = n_gen
-        self.inertia = inertia
+        self.inertia = inertia*n_gen
+        self.kd = kd*n_gen
 
 
 class Load(Node):
@@ -83,7 +84,7 @@ class Load(Node):
     def __init__(self, bus, name=None, base_v=None, base_p=None,
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
-                 v_min=0.9, v_max=1.1):
+                 v_min=0.9, v_max=1.1, freq_dep=0):
         """Load constructor.
         Args:
             name: Name of the load
@@ -95,11 +96,13 @@ class Load(Node):
             reactive_power: Reactive power at the load
             v_min: minimum voltage at the load
             v_max: maximum voltage
+            freq_dep: Frequency dependency
             """
         super().__init__(bus, name, base_v, base_p, voltage, angle,
                          v_min, v_max)
         self.active_power = active_power
         self.reactive_power = reactive_power
+        self.freq_dep = freq_dep
 
 
 class Edge:

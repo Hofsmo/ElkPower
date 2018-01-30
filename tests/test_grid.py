@@ -79,3 +79,9 @@ def test_dc_state_matrix(grid):
     test = grid.dc_state_matrix()
     correct = -0.1*np.pi*3300*50/(300*9.68)
     np.testing.assert_allclose(correct, test[1, 0], atol=0.1)
+
+
+def test_inertia(grid):
+    """Test total inertia."""
+    np.testing.assert_allclose(9.68+96.8,
+                               grid.system["inertia"])
