@@ -189,11 +189,31 @@ class Grid:
 
             # Calculate entries for derivative of speed
             try:
-                a_matrix[theta_i+1, 1] = -generator.kd/(2*generator.inertia)
+                a_matrix[theta_i+1, 1] = -generator.Kd/(2*generator.inertia)
             except TypeError:
                 print("Missing dynamic parameter")
             self.dc_state_matrix_electrical_power(theta_i, idx,
                                                   a_matrix)
+            a_matrix[theta_i+1, theta_i+4] = generator.n_gen / \
+                (2 * generator.inertia)
+
+            # Calculate entries corresponding to output of governor
+            pid = -generator.Kp/generator.Ti
+            a_matrix[theta_i+2] = -generator.Kp*a_matrix[theta_i+1]
+            a_matrix[theta_i+2, theta_i+1] = pid
+            a_matrix[theta_i+2, theta_i+3] = pid*generator.R
+
+            # Calculate entries corresponding to output of servo
+            Ty = generator.Ty
+            Tw = generator.Tw
+            a_matrix[theta_i+3, theta_i+2] = 1/Ty
+            a_matrix[theta_i+3, theta_i+3] = -1/Ty
+
+            # Calculate the entries corresponding to mechanical power
+            a_matrix[theta_i+4, theta_i+2] = -2/Ty
+            a_matrix[theta_i+4, theta_i+3] = 2*(Ty+Tw)/(Tw*Ty)
+            a_matrix[theta_i+4, theta_i+4] = -2/Tw
+
         return a_matrix
 
     def dc_state_matrix_electrical_power(self, theta_i, idx_i,

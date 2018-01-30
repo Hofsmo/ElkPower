@@ -52,7 +52,8 @@ class Generator(Node):
                  voltage=1.0, angle=0.0,
                  active_power=0.0, reactive_power=0.0,
                  v_min=0.9, v_max=1.1, x=None,
-                 n_gen=1, inertia=0, kd=None):
+                 n_gen=1, inertia=0, Kd=None,
+                 Kp=0, Ti=0, R=0, Tw=0, Ty=0):
         """
         Generator constructor.
         Args:
@@ -67,6 +68,13 @@ class Generator(Node):
             v_max: maximum voltage
             x: Internal reactance
             n_gen: Number of generators for aggregated generators
+            inertia: Inertia constant
+            Kd: Damping constant
+            Kp: Governor proportional constant
+            Ti: Governor integral time
+            R: Governor droop
+            Tw: Penstock water time
+            Ty: Servo time constant
             """
         super().__init__(bus, name, base_v, base_p, voltage, angle,
                          v_min, v_max)
@@ -75,7 +83,12 @@ class Generator(Node):
         self.x = x
         self.n_gen = n_gen
         self.inertia = inertia*n_gen
-        self.kd = kd*n_gen
+        self.Kd = Kd*n_gen
+        self.Kp = Kp
+        self.Ti = Ti
+        self.R = R
+        self.Tw = Tw
+        self.Ty = Ty
 
 
 class Load(Node):
